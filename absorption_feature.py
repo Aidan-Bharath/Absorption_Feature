@@ -7,31 +7,30 @@ from matplotlib import pyplot as plt
 
 # Variable Definitions
 
-dg = 4       # HWHM of the incident light source (1/m)
-dh = 1         # HWHM of flatness defect  Gaussian (1/m)
-df = 1         # Free spectral range of the Etalon (1/m)
-dt = 4       # HWHM of the top hat function (1/m)
+dg = 1       # HWHM of the incident light source
+dh = 1         # HWHM of flatness defect  Gaussian
+df =8         # Free spectral range of the Etalon
+dt = 4       # HWHM of the top hat function
 
-sigma = np.arange(-10,10,0.01)
-sigma_o = np.arange(-10,10,0.01)
-# range of wavenumbers (1/m)
+sigma = np.arange(-10,10,0.1)
+sigma_o = np.arange(-10,10,0.1)
+# range of wavenumbers
 # np.arange(start,stop,stepsize)
 
 
-# sigma = 0     # wavelength (1/m)
 
-k = 1	       # absorption dip lorentzian HWHM (1/m)
-l = 0.1	       # convolution lorentzin HWHM (1/m)
+k = .01	       # absorption dip lorentzian HWHM
+l = 0.1	       # convolution lorentzin HWHM
 A = 0          # Etalon absorption coefficient
 R = 0.99       # Etalon reflection Coefficient
 hr = 1         # decimal value of absorption
-a = 30      # temporary fill in soon
+a = 50     # temporary fill in soon
 
 ###### Code Functionality
 # 1 = true , 0 = false
 
-abs_dip = 1
-etalon_trans = 1
+abs_dip = 0
+etalon_trans =1
 gauss_conv = 0
 lorentz_conv = 0
 tophat_conv = 0
@@ -102,7 +101,7 @@ def conv_gauss(sigma,sigma_o):
     total = 0
     for i in xrange(len(sigma_o)):
         total += Gauss(dh,df,sigma_o[i],0)*incident(dg,df,sigma,sigma_o[i],l)
-        return total
+    return total
 
 
 #Lorentzian Convolution
@@ -112,12 +111,12 @@ def conv_lorentz(sigma,sigma_o):
         total = 0
         for i in xrange(len(sigma_o)):
             total += lineshape1[i]*Lorentz(k,df,sigma,sigma_o[i])
-            return total
+        return total
     else:
         total = 0
         for i in xrange(len(sigma_o)):
             total += Lorentz(k,df,sigma_o[i],0)*incident(dg,df,sigma,sigma_o[i],l)
-            return total
+        return total
 
 
 #Tophat Convolution
@@ -135,6 +134,7 @@ def conv_tophat(sigma,sigma_o):
             total += lineshape1[i]*tophat(dt,df,sigma_o[i],sigma)
         return total
 
+
     elif gauss_conv == 0 and lorentz_conv == 1:
         total = 0
         for i in xrange(len(sigma_o)):
@@ -144,7 +144,7 @@ def conv_tophat(sigma,sigma_o):
     else:
         total = 0
         for i in xrange(len(sigma_o)):
-            total += tophat(dt,df,sigma_o[i],sigma)*incident(dg,df,sigma,sigma_o[i],l)
+            total += tophat(dt,df,sigma_o[i],0)*incident(dg,df,sigma,sigma_o[i],l)
         return total
 
 # Etalon Transmission Function Convolution
@@ -177,7 +177,7 @@ def conv_etalon(sigma,sigma_o):
     elif gauss_conv == 1 and lorentz_conv == 0 and tophat_conv == 0:
         total = 0
         for i in xrange(len(sigma_o)):
-            total += lineshape1[i]*Etalon(R,A,df,sigma_o[i],sigma)
+            total += lineshape1[i]*Etalon(R,A,df,sigma,sigma_o[i])
         return total
 
     elif gauss_conv == 0 and lorentz_conv == 1 and tophat_conv == 0:
@@ -195,7 +195,7 @@ def conv_etalon(sigma,sigma_o):
     else:
         total = 0
         for i in xrange(len(sigma_o)):
-            total += Etalon(R,A,df,sigma_o[i],sigma)*incident(dg,df,sigma,sigma_o[i],l)
+            total += Etalon(R,A,df,sigma_o[i],0)*incident(dg,df,sigma,sigma_o[i],l)
         return total
 
 
@@ -247,8 +247,7 @@ if etalon_trans == 1:
 ### Plotting functions
 hat = np.zeros(len(sigma))
 for i in xrange(len(sigma)):
-    hat[i] = tophat(dt,df,sigma[i],0)
-
+    hat[i] = Etalon(R,A,df,sigma[i],sigma_o[10])
 plt.plot(sigma,lineshape4)
 plt.show()
 
